@@ -1,0 +1,40 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:latest
+    env_file:
+      - .env
+    environment:
+      PG_NAME: ${PG_NAME}
+      PG_USER: ${PG_USER}
+      PG_PASSWORD: ${PG_PASSWORD}
+    ports:
+      - "5431:5432"
+    networks:
+      - mynetwork
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DJANGO_SETTINGS_MODULE: crud.settings
+      DEBUG: "True"
+    ports:
+      - "7999:8000"
+    depends_on:
+      - postgres
+    networks:
+      - mynetwork
+  nginx:
+    image: nginx:latest
+    ports:
+      - "79:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - backend
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
